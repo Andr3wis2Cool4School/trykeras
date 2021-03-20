@@ -68,5 +68,13 @@ CONV + RELU
 
 # 经典的网络架构 比较老
 
-Alexnet 12年夺冠的网络
+- Alexnet 12年夺冠的网络
 ![image](../images/alexnet.png)
+
+
+# 残差网络 Resnet
+20层以后的事情
+
+
+# 感受野
+一般情况下希望 感受野越大越好
