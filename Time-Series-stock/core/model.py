@@ -2,6 +2,7 @@ import math
 import datetime 
 import numpy as np
 import pandas as pd
+from numpy import newaxis
 from core.utils import Timer 
 import tensorflow as tf 
 from tensorflow import keras 
@@ -43,5 +44,49 @@ class Model():
         timer.stop()
 		
         return self.model
+
+    def train(self, x, y, epochs, batch_size, save_dir):
+        timer = Timer()
+        timer.start()
+        print('[Model] Trianing Started')
+        print('[Model] {} epochs, {} batch size'.format(epochs, batch_size))
+
+        callbacks = [
+            EarlyStopping(monitor='val_loss', patience=4),
+            ModelCheckpoint(filepath=save_dir, monitor='val_loss', save_best_only=True)
+        ]
+        self.model.fit(
+            x, 
+            y,
+            epochs=epochs,
+            batch_size=batch_size,
+            callbacks=callbacks
+        )
+        self.model.save(save_dir)
+
+        print('[Model] Training Completed. Model saved as {}'.format(save_dir))
+        timer.stop()
+
+    def predict_sequences_multiple(self, data, window_size, prediction_len):
+        print('[Model] Predicting Sequences Multiple...')
+        prediction_seqs = []
+        for i in range(int(len(data)/prediction_len)):
+            curr_frame = data[i*prediction_len]
+            predicted = []
+            for j in range(prediction_len):
+                predicted.append(self.model.predict(curr_frame[newaxis, :, :])[0, 0])
+                curr_frame = curr_frame[1:]
+                curr_frame = np.insert(curr_frame, [window_size-2], predicted[-1], axis=0)
+            prediction_seqs.append(predicted)
+            return prediction_seqs
+
+    def predict_point_by_point(self, data):
+        print('[Model] Predictiing point-by-point...')
+        predicted = self.model.predict(data)
+        predicted = np.reshape(predicted, (predicted.size,))
+        return predicted 
+    
+    
+
 
         

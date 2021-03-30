@@ -30,7 +30,7 @@ class DataLoader():
     def normalise_windows(self, window_data, single_window=False):
         normalised_data = []
         window_data = [window_data] if single_window else window_data
-        for windows in window_data:
+        for window in window_data:
             normalised_window = []
             for col_i in range(window.shape[1]):
                 normalised_col = [((float(p)/float(window[0, col_i])) - 1) for p in window[:, col_i]] 
@@ -39,4 +39,25 @@ class DataLoader():
             normalised_data.append(normalised_window)
 
         return np.array(normalised_data)
+
+    def get_train_data(self, seq_len, normalise):
+
+        data_x = []
+        data_y = []
+
+        for i in range(self.len_train - seq_len):
+            x, y = self._next_windows(i, seq_len, normalise)
+            data_x.append(x)
+            data_y.append(y)
+        return np.array(data_x), np.array(data_y)
+
+
+    def _next_windows(self, i, seq_len, normalise):
+        window = self.data_train[i:i+seq_len]
+        # normalisze
+        window = self.normalise_windows(window, single_window=True)[0] if normalise else window
+        x = window[:-1]
+        y = window[-1, [0]]
+        return x, y
+
 
